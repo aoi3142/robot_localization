@@ -269,6 +269,10 @@ namespace RobotLocalization
     transferFunction_(StateMemberVy, StateMemberAy) = delta;
     transferFunction_(StateMemberVz, StateMemberAz) = delta;
 
+    transferFunction_.block<3,3>(StateMemberX, StateMemberBAx) = -0.5 * delta * delta * Eigen::Matrix3d::Identity();
+
+    transferFunction_.block<3,3>(StateMemberVx, StateMemberBAx) = -transferFunction_.block<3,3>(StateMemberX, StateMemberVx).transpose();
+
     // Prepare the transfer function Jacobian. This function is analytically derived from the
     // transfer function.
     double xCoeff = 0.0;
@@ -341,6 +345,9 @@ namespace RobotLocalization
     transferFunctionJacobian_(StateMemberPitch, StateMemberRoll) = dFP_dR;
     transferFunctionJacobian_(StateMemberYaw, StateMemberRoll) = dFY_dR;
     transferFunctionJacobian_(StateMemberYaw, StateMemberPitch) = dFY_dP;
+
+    transferFunctionJacobian_.block<3,3>(StateMemberX, StateMemberBAx) = 0.5 * delta * delta * Eigen::Matrix3d::Ones(); 
+    transferFunctionJacobian_.block<3,3>(StateMemberVx, StateMemberBAx) = delta * transferFunction_.block<3,3>(StateMemberX, StateMemberVx).transpose(); 
 
     FB_DEBUG("Transfer function is:\n" << transferFunction_ <<
              "\nTransfer function Jacobian is:\n" << transferFunctionJacobian_ <<
